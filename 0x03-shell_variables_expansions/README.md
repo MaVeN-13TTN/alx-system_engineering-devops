@@ -68,6 +68,60 @@ Creates a new global (environment) variable named BEST with the value "School".
 - **Effect**: Creates a global variable that will be available to child processes
 - **Uses**: `export` command to make the variable available globally
 
+### 8-true_knowledge
+
+Prints the result of adding 128 to the value stored in the TRUEKNOWLEDGE environment variable.
+
+- **Usage**: `./8-true_knowledge`
+- **Prerequisites**: TRUEKNOWLEDGE environment variable must be set
+- **Output**: Result of `128 + TRUEKNOWLEDGE`
+- **Uses**: Shell arithmetic expansion `$((128 + TRUEKNOWLEDGE))`
+
+### 9-divide_and_rule
+
+Prints the result of dividing POWER by DIVIDE.
+
+- **Usage**: `./9-divide_and_rule`
+- **Prerequisites**: POWER and DIVIDE environment variables must be set
+- **Output**: Result of `POWER / DIVIDE`
+- **Uses**: Shell arithmetic expansion `$((POWER / DIVIDE))`
+
+### 10-love_exponent_breath
+
+Displays the result of BREATH raised to the power of LOVE.
+
+- **Usage**: `./10-love_exponent_breath`
+- **Prerequisites**: BREATH and LOVE environment variables must be set
+- **Output**: Result of `BREATH ^ LOVE`
+- **Uses**: Shell arithmetic expansion with exponentiation `$((BREATH ** LOVE))`
+
+### 11-binary_to_decimal
+
+Converts a binary number to decimal.
+
+- **Usage**: `./11-binary_to_decimal`
+- **Prerequisites**: BINARY environment variable must be set with a binary number
+- **Output**: Decimal equivalent of the binary number
+- **Uses**: Shell arithmetic with base conversion `$((2#$BINARY))`
+
+### 12-combinations
+
+Prints all possible combinations of two lowercase letters, except 'oo'.
+
+- **Usage**: `./12-combinations`
+- **Output**: 675 combinations (26² - 1), alpha ordered, one per line
+- **Method**: Brace expansion `{a..z}{a..z}` with `grep -v oo` to exclude 'oo'
+- **Constraint**: Script contains maximum 64 characters
+
+### 13-print_float
+
+Prints a number with exactly two decimal places.
+
+- **Usage**: `./13-print_float`
+- **Prerequisites**: NUM environment variable must be set
+- **Output**: Number formatted to 2 decimal places
+- **Uses**: `printf "%.2f\n"` for precise decimal formatting
+
 ## Requirements Met
 
 - All scripts are exactly 2 lines long
