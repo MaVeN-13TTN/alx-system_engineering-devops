@@ -122,6 +122,48 @@ Prints a number with exactly two decimal places.
 - **Output**: Number formatted to 2 decimal places
 - **Uses**: `printf "%.2f\n"` for precise decimal formatting
 
+## Advanced Tasks
+
+### 100-decimal_to_hexadecimal
+
+Converts a decimal number to hexadecimal.
+
+- **Usage**: `./100-decimal_to_hexadecimal`
+- **Prerequisites**: DECIMAL environment variable must be set
+- **Output**: Hexadecimal representation (lowercase)
+- **Uses**: `printf "%x\n"` for hexadecimal conversion
+
+### 101-rot13
+
+Encodes and decodes text using ROT13 encryption.
+
+- **Usage**: `./101-rot13 < file` or `echo "text" | ./101-rot13`
+- **Input**: Text from stdin
+- **Output**: ROT13 encoded/decoded text
+- **Method**: `tr 'A-Za-z' 'N-ZA-Mn-za-m'` (shifts each letter by 13 positions)
+- **Note**: ROT13 is symmetric - applying it twice returns original text
+
+### 102-odd
+
+Prints every other line from input, starting with the first line.
+
+- **Usage**: `ls -1 | ./102-odd` or `./102-odd < file`
+- **Input**: Text from stdin
+- **Output**: Lines 1, 3, 5, 7, etc.
+- **Method**: `paste - -` pairs lines, `cut -f1` takes first column
+
+### 103-water_and_stir
+
+Adds two numbers in custom bases and outputs result in another custom base.
+
+- **Usage**: `./103-water_and_stir`
+- **Prerequisites**: WATER and STIR environment variables must be set
+- **Input bases**:
+  - WATER uses base "water" (w=0, a=1, t=2, e=3, r=4)
+  - STIR uses base "stir." (s=0, t=1, i=2, r=3, .=4)
+- **Output base**: "bestchol" (b=0, e=1, s=2, t=3, c=4, h=5, o=6, l=7)
+- **Process**: Converts to decimal, adds, converts to octal, maps to bestchol
+
 ## Requirements Met
 
 - All scripts are exactly 2 lines long
