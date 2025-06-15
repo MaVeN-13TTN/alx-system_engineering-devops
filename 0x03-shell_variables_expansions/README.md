@@ -36,6 +36,38 @@ Counts and displays the number of directories in the PATH environment variable.
 - **Output**: Number of directories in PATH
 - **Method**: Uses `tr` to replace colons with newlines and `wc -l` to count lines
 
+### 4-global_variables
+
+Lists all environment variables.
+
+- **Usage**: `source ./4-global_variables`
+- **Output**: All environment variables in the format `VARIABLE=value`
+- **Uses**: `printenv` command to display environment variables
+
+### 5-local_variables
+
+Lists all local variables, environment variables, and functions.
+
+- **Usage**: `source ./5-local_variables` or `. ./5-local_variables`
+- **Output**: Complete list of all shell variables, environment variables, and function definitions
+- **Uses**: `set` command to display all variables and functions
+
+### 6-create_local_variable
+
+Creates a new local variable named BEST with the value "School".
+
+- **Usage**: `source ./6-create_local_variable`
+- **Effect**: Creates a local variable that is only available in the current shell
+- **Variable**: `BEST="School"`
+
+### 7-create_global_variable
+
+Creates a new global (environment) variable named BEST with the value "School".
+
+- **Usage**: `source ./7-create_global_variable`
+- **Effect**: Creates a global variable that will be available to child processes
+- **Uses**: `export` command to make the variable available globally
+
 ## Requirements Met
 
 - All scripts are exactly 2 lines long
