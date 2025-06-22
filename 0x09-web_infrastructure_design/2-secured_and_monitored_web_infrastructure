@@ -1,0 +1,224 @@
+# 2. Secured and Monitored Web Infrastructure
+
+## Infrastructure Design
+
+**Image URL:** [Insert your diagram screenshot URL here]
+
+### ASCII Diagram
+
+```
+                           Internet
+                              |
+                              |
+          [User Computer] ----+---- DNS Server
+                 |                     |
+                 |                     |
+                 |              www.foobar.com
+                 |               (A record)
+                 |                     |
+                 |                     v
+                 |                IP: 8.8.8.8
+                 |                     |
+                 +----HTTPS Request----+
+                                       |
+                                       v
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    Firewall 1                               │
+    │              (Network Level Protection)                     │
+    └─────────────────────┬───────────────────────────────────────┘
+                          │
+                          v
+    ┌─────────────────────────────────────────────────────────────┐
+    │                  HAProxy Load Balancer                      │
+    │                     (Server 1)                             │
+    │                                                             │
+    │  ┌─────────────────────────────────────────────────────┐    │
+    │  │             SSL Certificate                        │    │
+    │  │         (HTTPS Termination)                        │    │
+    │  │      Algorithm: Round Robin                        │    │
+    │  │      Distribution: Active-Active                   │    │
+    │  └─────────────────────────────────────────────────────┘    │
+    │  ┌─────────────────────────────────────────────────────┐    │
+    │  │          Monitoring Client 1                       │    │
+    │  │         (Sumologic Agent)                          │    │
+    │  └─────────────────────────────────────────────────────┘    │
+    └─────────────────────┬───────────────────┬───────────────────┘
+                          │                   │
+                          │                   │
+                          v                   v
+    ┌─────────────────────────────────────────┐    ┌─────────────────────────────────────────┐
+    │              Firewall 2                 │    │              Firewall 3                 │
+    │        (Server Level Protection)        │    │        (Server Level Protection)        │
+    └─────────────────┬───────────────────────┘    └─────────────┬───────────────────────────┘
+                      │                                          │
+                      v                                          v
+    ┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+    │           Server 2              │    │           Server 3              │
+    │      (Web + App + DB)           │    │      (Web + App + DB)           │
+    │                                 │    │                                 │
+    │  ┌─────────────────────────┐    │    │  ┌─────────────────────────┐    │
+    │  │        Nginx            │    │    │  │        Nginx            │    │
+    │  │     Web Server          │    │    │  │     Web Server          │    │
+    │  └─────────────────────────┘    │    │  └─────────────────────────┘    │
+    │  ┌─────────────────────────┐    │    │  ┌─────────────────────────┐    │
+    │  │    Application          │    │    │  │    Application          │    │
+    │  │      Server             │    │    │  │      Server             │    │
+    │  └─────────────────────────┘    │    │  └─────────────────────────┘    │
+    │  ┌─────────────────────────┐    │    │  ┌─────────────────────────┐    │
+    │  │    Application          │    │    │  │    Application          │    │
+    │  │       Files             │    │    │  │       Files             │    │
+    │  │    (Code Base)          │    │    │  │    (Code Base)          │    │
+    │  └─────────────────────────┘    │    │  └─────────────────────────┘    │
+    │  ┌─────────────────────────┐    │    │  ┌─────────────────────────┐    │
+    │  │       MySQL             │    │    │  │       MySQL             │    │
+    │  │     Database            │    │    │  │     Database            │    │
+    │  │   (Read/Write)          │    │    │  │   (Read/Write)          │    │
+    │  └─────────────────────────┘    │    │  └─────────────────────────┘    │
+    │  ┌─────────────────────────┐    │    │  ┌─────────────────────────┐    │
+    │  │   Monitoring Client 2   │    │    │  │   Monitoring Client 3   │    │
+    │  │   (Sumologic Agent)     │    │    │  │   (Sumologic Agent)     │    │
+    │  └─────────────────────────┘    │    │  └─────────────────────────┘    │
+    └─────────────────────────────────┘    └─────────────────────────────────┘
+                      │                                          │
+                      │                                          │
+                      └─────────────┬────────────────────────────┘
+                                    │
+                                    v
+                    ┌─────────────────────────────────────┐
+                    │        Monitoring Service           │
+                    │          (Sumologic)                │
+                    │                                     │
+                    │  - Collects logs and metrics        │
+                    │  - Real-time monitoring             │
+                    │  - Alerting and dashboards          │
+                    │  - Performance analysis             │
+                    └─────────────────────────────────────┘
+```
+
+## Infrastructure Explanation
+
+### Additional Elements and Their Purpose
+
+**Why add 3 Firewalls?**
+- **Network Security**: Firewalls filter and block malicious traffic before it reaches servers
+- **Access Control**: Define rules for which ports and protocols are allowed
+- **Attack Prevention**: Protect against DDoS, port scanning, and unauthorized access
+- **Layered Security**: Multiple firewall layers provide defense in depth
+- **Traffic Monitoring**: Log and monitor all network traffic for security analysis
+
+**Why add SSL Certificate for HTTPS?**
+- **Data Encryption**: Encrypts data transmission between users and servers
+- **Authentication**: Verifies the identity of the website to users
+- **Data Integrity**: Ensures data hasn't been tampered with during transmission
+- **Trust**: Builds user confidence with secure connection indicators
+- **SEO Benefits**: Search engines favor HTTPS websites
+- **Compliance**: Meets modern security standards and regulations
+
+**Why add 3 Monitoring Clients?**
+- **Performance Tracking**: Monitor server performance, response times, and resource usage
+- **Error Detection**: Quickly identify and alert on system failures or errors
+- **Capacity Planning**: Collect data to predict when scaling is needed
+- **Security Monitoring**: Detect suspicious activities and potential security breaches
+- **Business Intelligence**: Gather metrics for business decision making
+- **Compliance**: Meet regulatory requirements for system monitoring
+
+### Security Components
+
+**What are Firewalls for?**
+- **Packet Filtering**: Examine and filter network packets based on rules
+- **Port Protection**: Block unauthorized access to specific ports
+- **IP Blocking**: Prevent traffic from known malicious IP addresses
+- **Protocol Control**: Allow only specific protocols (HTTP/HTTPS, SSH, etc.)
+- **Intrusion Prevention**: Detect and block suspicious network patterns
+- **Logging**: Record all network activity for security analysis
+
+**Why is Traffic Served over HTTPS?**
+- **Encryption**: SSL/TLS encrypts all data between client and server
+- **Privacy**: Protects sensitive information like passwords and personal data
+- **Authentication**: Confirms users are connecting to the legitimate website
+- **Integrity**: Prevents man-in-the-middle attacks and data tampering
+- **Modern Standards**: Required by browsers and security best practices
+- **User Trust**: Users expect and trust secure connections
+
+### Monitoring System
+
+**What Monitoring is Used For:**
+- **System Health**: Track CPU, memory, disk usage, and network performance
+- **Application Performance**: Monitor response times, error rates, and throughput
+- **Security Events**: Detect unauthorized access attempts and suspicious activities
+- **Business Metrics**: Track user engagement, conversion rates, and revenue
+- **Capacity Planning**: Predict when additional resources are needed
+- **Troubleshooting**: Quickly identify and resolve system issues
+
+**How Monitoring Tool Collects Data:**
+1. **Agent-Based Collection**: Monitoring clients (agents) installed on each server
+2. **Log Aggregation**: Agents collect and forward log files to monitoring service
+3. **Metrics Gathering**: Agents collect system metrics (CPU, memory, network)
+4. **API Integration**: Applications send custom metrics via APIs
+5. **Network Monitoring**: Monitor network traffic and connectivity
+6. **Real-time Streaming**: Data sent continuously to monitoring service
+
+**Monitoring Web Server QPS (Queries Per Second):**
+1. **Configure Nginx Logging**: Enable detailed access logs with timestamps
+2. **Install Monitoring Agent**: Deploy Sumologic agent on web servers
+3. **Log Parsing**: Configure agent to parse Nginx access logs
+4. **Metric Calculation**: Agent calculates requests per second from log data
+5. **Dashboard Setup**: Create QPS dashboard in Sumologic interface
+6. **Alerting**: Set up alerts when QPS exceeds or drops below thresholds
+7. **Analysis**: Use historical data to identify traffic patterns and trends
+
+## Infrastructure Issues
+
+### SSL Termination at Load Balancer
+
+**Why SSL Termination at Load Balancer is an Issue:**
+- **Internal Traffic Unencrypted**: Traffic between load balancer and web servers is not encrypted
+- **Security Risk**: Internal network traffic can be intercepted and read
+- **Compliance Issues**: May not meet strict regulatory requirements
+- **Single Point of Failure**: SSL certificate management concentrated in one place
+- **Performance Impact**: Load balancer must handle all encryption/decryption
+- **Troubleshooting Complexity**: Harder to debug SSL issues across the infrastructure
+
+**Better Approach:**
+- **End-to-End Encryption**: Encrypt traffic all the way to web servers
+- **Certificate Distribution**: Install SSL certificates on all web servers
+- **Load Balancer Passthrough**: Configure load balancer to pass encrypted traffic
+
+### Single MySQL Write Server
+
+**Why Having Only One MySQL Server for Writes is an Issue:**
+- **Single Point of Failure**: If the write server fails, no data can be saved
+- **Performance Bottleneck**: All write operations go through one server
+- **Scalability Limitation**: Cannot handle increasing write loads
+- **Maintenance Downtime**: Updates require taking down write capability
+- **Data Loss Risk**: No immediate backup for write operations
+- **Geographic Limitations**: All writes must go to one physical location
+
+**Better Approach:**
+- **MySQL Cluster**: Multiple servers that can handle writes
+- **Master-Master Replication**: Multiple masters with conflict resolution
+- **Database Sharding**: Distribute data across multiple write-capable servers
+
+### Servers with Same Components
+
+**Why Having All Same Components is a Problem:**
+- **Resource Waste**: Database servers don't need web server components
+- **Security Risk**: Larger attack surface with unnecessary services
+- **Performance Impact**: Services compete for the same resources
+- **Scalability Issues**: Cannot scale individual components independently
+- **Maintenance Complexity**: Updates affect multiple services simultaneously
+- **Cost Inefficiency**: Over-provisioning resources for services that don't need them
+
+**Better Approach:**
+- **Service Separation**: Dedicated servers for web, application, and database tiers
+- **Microservices Architecture**: Individual services that can scale independently
+- **Container Orchestration**: Use containers to isolate and manage services
+- **Specialized Hardware**: Optimize servers for specific workloads
+
+### Additional Security Considerations
+
+**Current Gaps:**
+- **Database Security**: Databases are still accessible from web servers
+- **Internal Network**: No segmentation between different service tiers
+- **Certificate Management**: Manual certificate renewal and distribution
+- **Access Control**: No role-based access control for different services

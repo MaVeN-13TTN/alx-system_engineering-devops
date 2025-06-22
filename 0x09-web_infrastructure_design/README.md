@@ -37,7 +37,18 @@ Design a three server web infrastructure that hosts www.foobar.com with load bal
 - 1 set of application files (code base)
 - 1 database (MySQL)
 
+### 2. Secured and monitored web infrastructure
+
+Design a three server web infrastructure that is secured, serves encrypted traffic, and is monitored
+
+### Requirements
+
+- 3 firewalls
+- 1 SSL certificate to serve www.foobar.com over HTTPS
+- 3 monitoring clients (data collector for Sumologic or other monitoring services)
+
 ## Files
 
 - `0-simple_web_stack`: Simple web stack infrastructure design
 - `1-distributed_web_infrastructure`: Distributed web infrastructure with load balancing
+- `2-secured_and_monitored_web_infrastructure`: Secured and monitored web infrastructure
