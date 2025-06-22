@@ -1,0 +1,138 @@
+# 0. Simple Web Stack
+
+## Infrastructure Design
+
+**Image URL:** [Insert your diagram screenshot URL here]
+
+### ASCII Diagram
+
+```
+                    Internet
+                        |
+                        |
+    [User Computer] ----+---- DNS Server
+           |                      |
+           |                      |
+           |               www.foobar.com
+           |                   (A record)
+           |                      |
+           |                      v
+           |              IP: 8.8.8.8
+           |                      |
+           |                      |
+           +------HTTP Request----+
+                                  |
+                                  v
+    ┌─────────────────────────────────────────────────────────┐
+    │                    SERVER (8.8.8.8)                    │
+    │                                                         │
+    │  ┌─────────────────┐  ┌─────────────────┐              │
+    │  │   Nginx         │  │  Application    │              │
+    │  │  Web Server     │  │     Server      │              │
+    │  │                 │  │                 │              │
+    │  │ - Receives HTTP │  │ - Executes code │              │
+    │  │ - Serves static │  │ - Business logic│              │
+    │  │ - Reverse proxy │  │ - Processes req │              │
+    │  └─────────────────┘  └─────────────────┘              │
+    │           │                     │                       │
+    │           │                     │                       │
+    │           └─────────────────────┘                       │
+    │                     │                                   │
+    │                     │                                   │
+    │  ┌─────────────────┐ │ ┌─────────────────┐              │
+    │  │  Application    │ │ │     MySQL       │              │
+    │  │     Files       │ │ │   Database      │              │
+    │  │  (Code Base)    │ │ │                 │              │
+    │  │                 │ │ │ - Stores data   │              │
+    │  │ - HTML/CSS/JS   │ │ │ - User info     │              │
+    │  │ - Backend code  │ │ │ - Content       │              │
+    │  └─────────────────┘ │ └─────────────────┘              │
+    │                      │                                  │
+    └──────────────────────┼──────────────────────────────────┘
+                           │
+                           │
+                    Data Queries &
+                      Responses
+```
+
+**Flow:**
+1. User requests www.foobar.com
+2. DNS resolves to 8.8.8.8
+3. HTTP request sent to server
+4. Nginx receives request
+5. Nginx forwards to Application Server
+6. App Server queries MySQL if needed
+7. Response sent back through chain
+
+## Infrastructure Explanation
+
+### User Access Flow
+
+When a user wants to access www.foobar.com:
+
+1. User types www.foobar.com in browser
+2. DNS resolution occurs to find IP address 8.8.8.8
+3. Browser sends HTTP request to server at 8.8.8.8
+4. Nginx web server receives the request
+5. Nginx forwards request to application server
+6. Application server processes request and queries MySQL database if needed
+7. Response is sent back through the chain to user's browser
+
+### Component Explanations
+
+**What is a server?**
+A server is a physical or virtual computer that provides services, resources, or data to other computers (clients) over a network. In this case, it hosts our entire web infrastructure.
+
+**What is the role of the domain name?**
+The domain name (foobar.com) serves as a human-readable address that maps to the server's IP address (8.8.8.8). It makes it easier for users to remember and access the website instead of using the numeric IP address.
+
+**What type of DNS record is www in www.foobar.com?**
+The "www" is a subdomain configured with a CNAME (Canonical Name) record or an A record that points to the server's IP address 8.8.8.8.
+
+**What is the role of the web server?**
+Nginx acts as the web server that:
+
+- Receives HTTP/HTTPS requests from clients
+- Serves static content (HTML, CSS, JS, images)
+- Acts as a reverse proxy to forward dynamic requests to the application server
+- Handles SSL termination and load balancing
+
+**What is the role of the application server?**
+The application server:
+
+- Executes the application code/business logic
+- Processes dynamic requests
+- Communicates with the database
+- Generates dynamic content to be served to users
+
+**What is the role of the database?**
+MySQL database:
+
+- Stores and manages application data
+- Handles data persistence
+- Provides data retrieval and storage functionality
+- Maintains data integrity and relationships
+
+**What is the server using to communicate with the user's computer?**
+The server communicates using the HTTP/HTTPS protocol over TCP/IP network connection.
+
+## Infrastructure Issues
+
+### SPOF (Single Point of Failure)
+
+- The entire infrastructure relies on a single server
+- If the server fails, the entire website becomes unavailable
+- Database, web server, and application server are all on one machine
+
+### Downtime during maintenance
+
+- Deploying new code requires restarting services
+- Database maintenance affects entire application
+- No redundancy to maintain service during updates
+
+### Cannot scale with traffic
+
+- Single server has limited resources (CPU, RAM, bandwidth)
+- Cannot handle traffic spikes effectively
+- No horizontal scaling capability
+- Performance degrades as traffic increases
