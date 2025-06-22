@@ -1,0 +1,191 @@
+# 1. Distributed Web Infrastructure
+
+## Infrastructure Design
+
+**Image URL:** [Insert your diagram screenshot URL here]
+
+### ASCII Diagram
+
+```
+                           Internet
+                              |
+                              |
+          [User Computer] ----+---- DNS Server
+                 |                     |
+                 |                     |
+                 |              www.foobar.com
+                 |               (A record)
+                 |                     |
+                 |                     v
+                 |                IP: 8.8.8.8
+                 |                     |
+                 +----HTTP Request-----+
+                                       |
+                                       v
+    ┌─────────────────────────────────────────────────────────────┐
+    │                  HAProxy Load Balancer                      │
+    │                     (Server 1)                             │
+    │                                                             │
+    │  Algorithm: Round Robin                                     │
+    │  Distribution: Active-Active                                │
+    │                                                             │
+    └─────────────────────┬───────────────────┬───────────────────┘
+                          │                   │
+                          │                   │
+            ┌─────────────v─────────────┐    ┌v─────────────────────┐
+            │       Server 2            │    │       Server 3       │
+            │   (Web + App Server)      │    │   (Web + App Server) │
+            │                           │    │                      │
+            │  ┌─────────────────────┐  │    │  ┌─────────────────┐ │
+            │  │       Nginx         │  │    │  │      Nginx      │ │
+            │  │    Web Server       │  │    │  │   Web Server    │ │
+            │  └─────────────────────┘  │    │  └─────────────────┘ │
+            │  ┌─────────────────────┐  │    │  ┌─────────────────┐ │
+            │  │   Application       │  │    │  │   Application   │ │
+            │  │     Server          │  │    │  │     Server      │ │
+            │  └─────────────────────┘  │    │  └─────────────────┘ │
+            │  ┌─────────────────────┐  │    │  ┌─────────────────┐ │
+            │  │   Application       │  │    │  │   Application   │ │
+            │  │      Files          │  │    │  │      Files      │ │
+            │  │   (Code Base)       │  │    │  │   (Code Base)   │ │
+            │  └─────────────────────┘  │    │  └─────────────────┘ │
+            └─────────────┬─────────────┘    └──────────┬──────────┘
+                          │                             │
+                          │                             │
+                          └─────────────┬───────────────┘
+                                        │
+                                        v
+                    ┌─────────────────────────────────────┐
+                    │        MySQL Database Cluster      │
+                    │                                     │
+                    │  ┌─────────────┐  ┌─────────────┐   │
+                    │  │   Primary   │  │   Replica   │   │
+                    │  │   (Master)  │  │   (Slave)   │   │
+                    │  │             │  │             │   │
+                    │  │ - Read/Write│  │ - Read Only │   │
+                    │  │ - Main DB   │  │ - Backup DB │   │
+                    │  │             │  │             │   │
+                    │  └──────┬──────┘  └─────────────┘   │
+                    │         │                           │
+                    │         └─── Replication ──────────▶│
+                    └─────────────────────────────────────┘
+```
+
+## Infrastructure Explanation
+
+### Additional Elements and Their Purpose
+
+**Why add 2 additional servers?**
+- **Redundancy**: Eliminates single points of failure
+- **Load distribution**: Spreads traffic across multiple servers
+- **Better performance**: Handles more concurrent users
+- **Fault tolerance**: If one server fails, others continue serving
+
+**Why add a Load Balancer (HAProxy)?**
+- **Traffic distribution**: Evenly distributes incoming requests
+- **High availability**: Routes traffic away from failed servers
+- **Scalability**: Makes it easy to add/remove servers
+- **Performance optimization**: Prevents server overload
+
+**Why separate the database?**
+- **Dedicated resources**: Database gets full server resources
+- **Security**: Database can be isolated from web traffic
+- **Scalability**: Database can be scaled independently
+- **Performance**: Optimized for database operations
+
+### Load Balancer Configuration
+
+**Distribution Algorithm: Round Robin**
+- Requests are distributed sequentially to each server
+- Server 2 gets request 1, Server 3 gets request 2, Server 2 gets request 3, etc.
+- Simple and effective for servers with similar capabilities
+- Ensures equal distribution of load
+
+**Active-Active vs Active-Passive Setup**
+
+**Current Setup: Active-Active**
+- Both Server 2 and Server 3 actively handle requests simultaneously
+- Load balancer distributes traffic to both servers
+- Better resource utilization and performance
+- Higher availability as both servers are operational
+
+**Active-Passive Alternative:**
+- Only one server (Active) handles requests while the other (Passive) stays on standby
+- Passive server only activates if Active server fails
+- Lower resource utilization but simpler failover
+- Less performance but guaranteed backup
+
+### Database Primary-Replica Cluster
+
+**How Primary-Replica Works:**
+1. **Primary (Master)** handles all write operations (INSERT, UPDATE, DELETE)
+2. **Replica (Slave)** receives copies of all data changes from Primary
+3. **Replication** happens asynchronously or synchronously
+4. **Read operations** can be distributed between Primary and Replica
+
+**Primary Node vs Replica Node for Application:**
+
+**Primary Node:**
+- Handles all write operations from the application
+- Source of truth for all data
+- Application writes user registrations, posts, updates here
+- Critical for data consistency
+
+**Replica Node:**
+- Handles read operations to reduce Primary load
+- Used for reporting, analytics, search queries
+- Provides read scalability
+- Serves as backup if Primary fails
+
+## Infrastructure Issues
+
+### Single Points of Failure (SPOF)
+
+**Load Balancer:**
+- If HAProxy fails, entire website becomes unreachable
+- No backup load balancer configured
+
+**Database Primary:**
+- If Primary database fails, no write operations possible
+- Application cannot save new data
+
+**Network Connection:**
+- Single internet connection point
+- If network fails, entire infrastructure is offline
+
+### Security Issues
+
+**No Firewall:**
+- Servers are exposed to all internet traffic
+- No protection against malicious attacks
+- No access control or port filtering
+
+**No HTTPS:**
+- Data transmitted in plain text
+- Vulnerable to man-in-the-middle attacks
+- No encryption for sensitive user data
+- Not compliant with modern security standards
+
+**Database Security:**
+- Database may be accessible from web servers
+- No encrypted communication between components
+
+### No Monitoring
+
+**Lack of Visibility:**
+- No way to track server performance
+- Cannot detect failures quickly
+- No alerts for system issues
+- No capacity planning data
+
+**Missing Metrics:**
+- Server resource usage unknown
+- Application performance not measured
+- Database query performance not tracked
+- User experience not monitored
+
+**Operational Challenges:**
+- Reactive instead of proactive maintenance
+- Difficult to troubleshoot issues
+- No performance optimization data
+- Cannot predict scaling needs
