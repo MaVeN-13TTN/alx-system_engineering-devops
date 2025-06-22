@@ -1,0 +1,238 @@
+# 3. Scale Up
+
+## Infrastructure Design
+
+**Image URL:** [Insert your diagram screenshot URL here]
+
+### ASCII Diagram
+
+```
+                           Internet
+                              |
+                              |
+          [User Computer] ----+---- DNS Server
+                 |                     |
+                 |                     |
+                 |              www.foobar.com
+                 |               (A record)
+                 |                     |
+                 |                     v
+                 |                IP: 8.8.8.8
+                 |                     |
+                 +----HTTPS Request----+
+                                       |
+                                       v
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    Firewall 1                               │
+    │              (Network Level Protection)                     │
+    └─────────────────────┬───────────────────────────────────────┘
+                          │
+                          v
+    ┌─────────────────────────────────────────────────────────────┐
+    │              HAProxy Load Balancer Cluster                  │
+    │                                                             │
+    │  ┌─────────────────────────┐  ┌─────────────────────────┐   │
+    │  │   HAProxy Primary       │  │   HAProxy Secondary     │   │
+    │  │     (Server 1)          │  │     (Server 2)          │   │
+    │  │                         │  │                         │   │
+    │  │ - SSL Termination       │  │ - Backup Load Balancer │   │
+    │  │ - Round Robin           │  │ - Heartbeat Monitoring  │   │
+    │  │ - Health Checks         │  │ - Failover Ready       │   │
+    │  │ - Primary Traffic       │  │ - Standby Mode         │   │
+    │  └─────────────────────────┘  └─────────────────────────┘   │
+    │  ┌─────────────────────────────────────────────────────┐    │
+    │  │          Monitoring Client 1 & 2                   │    │
+    │  │         (Sumologic Agents)                          │    │
+    │  └─────────────────────────────────────────────────────┘    │
+    └─────────────────────┬───────────────────────────────────────┘
+                          │
+                          │
+                          v
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    Firewall 2                               │
+    │              (Application Tier Protection)                  │
+    └─────────────────────┬───────────────────┬───────────────────┘
+                          │                   │
+                          │                   │
+                          v                   v
+    ┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+    │         Server 3                │    │         Server 4                │
+    │      (Web Server Only)          │    │   (Application Server Only)     │
+    │                                 │    │                                 │
+    │  ┌─────────────────────────┐    │    │  ┌─────────────────────────┐    │
+    │  │        Nginx            │    │    │  │    Application          │    │
+    │  │     Web Server          │    │    │  │      Server             │    │
+    │  │                         │    │    │  │                         │    │
+    │  │ - Serves Static Files   │    │    │  │ - Business Logic        │    │
+    │  │ - Handles HTTP Requests │    │    │  │ - API Endpoints         │    │
+    │  │ - Reverse Proxy         │    │    │  │ - Session Management    │    │
+    │  │ - SSL Termination       │    │    │  │ - Data Processing       │    │
+    │  └─────────────────────────┘    │    │  └─────────────────────────┘    │
+    │  ┌─────────────────────────┐    │    │  ┌─────────────────────────┐    │
+    │  │    Application          │    │    │  │    Application          │    │
+    │  │       Files             │    │    │  │       Files             │    │
+    │  │    (Code Base)          │    │    │  │    (Code Base)          │    │
+    │  │                         │    │    │  │                         │    │
+    │  │ - HTML/CSS/JS           │    │    │  │ - Backend Code          │    │
+    │  │ - Static Assets         │    │    │  │ - Libraries             │    │
+    │  │ - Templates             │    │    │  │ - Configuration         │    │
+    │  └─────────────────────────┘    │    │  └─────────────────────────┘    │
+    │  ┌─────────────────────────┐    │    │  ┌─────────────────────────┐    │
+    │  │   Monitoring Client 3   │    │    │  │   Monitoring Client 4   │    │
+    │  │   (Sumologic Agent)     │    │    │  │   (Sumologic Agent)     │    │
+    │  └─────────────────────────┘    │    │  └─────────────────────────┘    │
+    └─────────────────┬───────────────┘    └─────────────┬───────────────────┘
+                      │                                  │
+                      │                                  │
+                      └─────────────┬────────────────────┘
+                                    │
+                                    v
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    Firewall 3                               │
+    │              (Database Tier Protection)                     │
+    └─────────────────────┬───────────────────────────────────────┘
+                          │
+                          v
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    Server 5                                 │
+    │               (Database Server Only)                        │
+    │                                                             │
+    │  ┌─────────────────────────────────────────────────────┐    │
+    │  │                MySQL Database                      │    │
+    │  │                                                    │    │
+    │  │  ┌─────────────┐  ┌─────────────┐                 │    │
+    │  │  │   Primary   │  │   Replica   │                 │    │
+    │  │  │   (Master)  │  │   (Slave)   │                 │    │
+    │  │  │             │  │             │                 │    │
+    │  │  │ - Read/Write│  │ - Read Only │                 │    │
+    │  │  │ - Main DB   │  │ - Backup DB │                 │    │
+    │  │  │             │  │             │                 │    │
+    │  │  └──────┬──────┘  └─────────────┘                 │    │
+    │  │         │                                         │    │
+    │  │         └─── Replication ──────────────────────▶  │    │
+    │  └─────────────────────────────────────────────────────┘    │
+    │  ┌─────────────────────────────────────────────────────┐    │
+    │  │              Monitoring Client 5                   │    │
+    │  │             (Sumologic Agent)                      │    │
+    │  └─────────────────────────────────────────────────────┘    │
+    └─────────────────────┬───────────────────────────────────────┘
+                          │
+                          │
+                          v
+                    ┌─────────────────────────────────────┐
+                    │        Monitoring Service           │
+                    │          (Sumologic)                │
+                    │                                     │
+                    │  - Collects logs and metrics        │
+                    │  - Real-time monitoring             │
+                    │  - Alerting and dashboards          │
+                    │  - Performance analysis             │
+                    └─────────────────────────────────────┘
+```
+
+## Infrastructure Explanation
+
+### Additional Elements and Their Purpose
+
+**Why add an additional server (Server 2 for HAProxy cluster)?**
+- **High Availability**: Eliminates single point of failure for load balancing
+- **Redundancy**: If primary load balancer fails, secondary takes over automatically
+- **Zero Downtime**: Maintenance can be performed on one load balancer while other handles traffic
+- **Improved Reliability**: Traffic distribution continues even during load balancer failures
+- **Scalability**: Can handle more concurrent connections with two load balancers
+
+**Why configure HAProxy as a cluster?**
+- **Failover Capability**: Automatic switching between primary and secondary load balancers
+- **Health Monitoring**: Continuous health checks between cluster members
+- **Shared Configuration**: Consistent load balancing rules across both instances
+- **Session Persistence**: Maintains user sessions during failover events
+- **Load Distribution**: Can distribute load balancing workload between both instances
+
+**Why split components into separate servers?**
+
+### **Dedicated Web Server (Server 3):**
+- **Optimized Performance**: Server resources dedicated solely to web serving tasks
+- **Better Security**: Reduced attack surface with only web server components
+- **Easier Scaling**: Can scale web tier independently based on traffic demands
+- **Specialized Configuration**: Optimized for handling HTTP requests and static content
+- **Resource Efficiency**: CPU and memory tuned for web server workloads
+
+### **Dedicated Application Server (Server 4):**
+- **Processing Power**: Full server resources available for business logic execution
+- **Memory Optimization**: Can allocate more RAM for application processes and caching
+- **Independent Scaling**: Scale application tier based on processing requirements
+- **Security Isolation**: Application logic separated from web-facing components
+- **Development Flexibility**: Easier to update and deploy application code
+
+### **Dedicated Database Server (Server 5):**
+- **Performance Optimization**: Server resources dedicated to database operations
+- **Storage Optimization**: Can use specialized storage hardware (SSDs, RAID arrays)
+- **Memory Management**: Large amounts of RAM for database caching and buffers
+- **Security Enhancement**: Database isolated from web traffic and application logic
+- **Backup and Recovery**: Easier to implement database-specific backup strategies
+
+## Architecture Benefits
+
+### **Improved Performance:**
+- **Resource Specialization**: Each server optimized for its specific workload
+- **Reduced Resource Contention**: Components don't compete for same server resources
+- **Better Caching**: Each tier can implement tier-specific caching strategies
+- **Parallel Processing**: Different tiers can process requests simultaneously
+
+### **Enhanced Security:**
+- **Network Segmentation**: Firewalls isolate different tiers
+- **Principle of Least Privilege**: Each server only has necessary components
+- **Reduced Attack Surface**: Fewer services per server means fewer vulnerabilities
+- **Defense in Depth**: Multiple security layers protect each tier
+
+### **Better Scalability:**
+- **Horizontal Scaling**: Can add multiple servers to any tier independently
+- **Vertical Scaling**: Can upgrade individual tiers based on bottlenecks
+- **Load Distribution**: Traffic and processing distributed across specialized servers
+- **Capacity Planning**: Can monitor and scale each tier based on specific metrics
+
+### **Improved Maintainability:**
+- **Component Isolation**: Updates to one tier don't affect others
+- **Easier Troubleshooting**: Issues can be isolated to specific tiers
+- **Independent Deployments**: Can deploy changes to individual components
+- **Specialized Monitoring**: Different monitoring strategies for each tier
+
+### **High Availability:**
+- **Redundant Load Balancers**: Eliminates load balancer single point of failure
+- **Database Replication**: Primary-Replica setup ensures data availability
+- **Component Redundancy**: Can add multiple servers to any tier for redundancy
+- **Failover Capabilities**: Automatic failover at multiple levels
+
+## Load Balancer Cluster Configuration
+
+### **Primary-Secondary Setup:**
+- **Active-Passive Configuration**: One load balancer actively handles traffic
+- **Heartbeat Monitoring**: Secondary monitors primary health continuously
+- **Automatic Failover**: Secondary activates when primary becomes unavailable
+- **Shared Virtual IP**: Both load balancers can use same external IP address
+- **Configuration Synchronization**: Settings replicated between cluster members
+
+### **Cluster Benefits:**
+- **Zero Downtime Maintenance**: Can maintain one load balancer while other serves traffic
+- **Improved Reliability**: Eliminates load balancer as single point of failure
+- **Better Performance**: Can handle more concurrent connections
+- **Disaster Recovery**: Geographic separation possible for disaster recovery
+
+## Component Communication
+
+### **Traffic Flow:**
+1. **User Request**: Client sends HTTPS request to www.foobar.com
+2. **DNS Resolution**: Domain resolves to load balancer cluster IP
+3. **Load Balancer**: HAProxy cluster receives and distributes requests
+4. **Web Server**: Nginx processes HTTP requests and serves static content
+5. **Application Server**: Handles business logic and dynamic content generation
+6. **Database Server**: Provides data storage and retrieval services
+7. **Response Path**: Data flows back through the same path to user
+
+### **Inter-Server Communication:**
+- **Web to Application**: HTTP/API calls for dynamic content
+- **Application to Database**: SQL queries and database connections
+- **Monitoring**: All servers report metrics to monitoring service
+- **Load Balancer Health Checks**: Regular health checks to all backend servers
+
+This scaled-up infrastructure provides better performance, security, and reliability by separating concerns and eliminating single points of failure while maintaining the ability to scale each component independently.

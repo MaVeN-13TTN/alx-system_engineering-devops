@@ -47,8 +47,19 @@ Design a three server web infrastructure that is secured, serves encrypted traff
 - 1 SSL certificate to serve www.foobar.com over HTTPS
 - 3 monitoring clients (data collector for Sumologic or other monitoring services)
 
+### 3. Scale up
+
+Design a scaled infrastructure with separated components and load balancer clustering
+
+### Requirements
+
+- 1 additional server
+- 1 load balancer (HAProxy) configured as cluster with the existing one
+- Split components (web server, application server, database) with their own server
+
 ## Files
 
 - `0-simple_web_stack`: Simple web stack infrastructure design
 - `1-distributed_web_infrastructure`: Distributed web infrastructure with load balancing
 - `2-secured_and_monitored_web_infrastructure`: Secured and monitored web infrastructure
+- `3-scale_up`: Scaled infrastructure with component separation and load balancer clustering
