@@ -1,0 +1,6 @@
+# Configures the SSH client to use a specific private key
+# and disable password authentication.
+
+Host *
+    IdentityFile ~/.ssh/school
+    PasswordAuthentication no 
