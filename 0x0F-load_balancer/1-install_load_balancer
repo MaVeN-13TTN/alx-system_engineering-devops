@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Installs and configures HAProxy load balancer to distribute traffic between web-01 and web-02
+
+# Update package list
+apt-get update -y
+
+# Install HAProxy
+apt-get install haproxy -y
+
+# Backup original configuration
+cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup
+
+# Create HAProxy configuration
+cat > /etc/haproxy/haproxy.cfg << 'EOF'
+global
+    daemon
+    maxconn 4096
+
+defaults
+    mode http
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+    option httpclose
+    option redispatch
+    retries 3
+
+frontend web_frontend
+    bind *:80
+    default_backend web_servers
+
+backend web_servers
+    balance roundrobin
+    option httpchk GET /
+    server 1300052-web-01 18.212.71.220:80 check
+    server 1300052-web-02 54.165.239.199:80 check
+EOF
+
+# Enable HAProxy to start on boot
+systemctl enable haproxy
+
+# Start HAProxy service
+systemctl restart haproxy
+
+# Check HAProxy status
+systemctl status haproxy
