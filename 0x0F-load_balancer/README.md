@@ -129,6 +129,58 @@ X-Served-By: 1300052-web-02
 - **Health Checks:** HTTP GET / requests
 - **Service Management:** systemctl/service commands supported
 
+### 2. Add a custom HTTP header with Puppet
+
+**File:** `2-puppet_custom_http_response_header.pp`
+
+Automate the task of creating a custom HTTP header response using Puppet instead of Bash scripting.
+
+**Requirements:**
+
+- The name of the custom HTTP header must be `X-Served-By`
+- The value of the custom HTTP header must be the hostname of the server Nginx is running on
+- Write `2-puppet_custom_http_response_header.pp` so that it configures a brand new Ubuntu machine to meet requirements
+
+**Puppet Resources Used:**
+
+- `package`: Install nginx
+- `exec`: Update package lists
+- `file`: Configure nginx default site and create index.html
+- `service`: Manage nginx service (running/enabled)
+
+**Usage:**
+
+```bash
+# Validate syntax
+puppet parser validate 2-puppet_custom_http_response_header.pp
+
+# Test in dry-run mode
+sudo puppet apply --noop 2-puppet_custom_http_response_header.pp
+
+# Apply the manifest
+sudo puppet apply 2-puppet_custom_http_response_header.pp
+```
+
+**Testing:**
+
+```bash
+curl -sI [SERVER_IP] | grep X-Served-By
+```
+
+**Expected Output:**
+
+```
+X-Served-By: 1300052-web-01
+```
+
+**Manifest Features:**
+
+- **Idempotent:** Can be run multiple times safely
+- **Dynamic Hostname:** Uses `${facts['hostname']}` for automatic server identification
+- **Complete Configuration:** Handles package installation, file management, and service control
+- **Proper Dependencies:** Ensures correct resource execution order
+- **File Ownership:** Sets appropriate permissions for web files
+
 ## Resources
 
 - [Introduction to load-balancing and HAproxy](https://www.digitalocean.com/community/tutorials/an-introduction-to-haproxy-and-load-balancing-concepts)
