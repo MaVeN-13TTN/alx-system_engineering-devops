@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Configures a new Ubuntu machine with nginx and adds custom HTTP response header
+
+# Update package list
+apt-get update -y
+
+# Install nginx
+apt-get install nginx -y
+
+# Create a simple HTML page with "Hello World!"
+echo "Hello World!" > /var/www/html/index.html
+
+# Get the hostname of the server
+HOSTNAME=$(hostname)
+
+# Configure nginx with custom HTTP header X-Served-By
+# Add the custom header to the default server configuration
+sed -i "/listen 80 default_server;/a\\	add_header X-Served-By $HOSTNAME;" /etc/nginx/sites-available/default
+
+# Test nginx configuration
+nginx -t
+
+# Start nginx service
+service nginx start
+
+# Make sure nginx starts on boot
+update-rc.d nginx enable
