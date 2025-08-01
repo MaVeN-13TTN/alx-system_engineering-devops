@@ -356,6 +356,100 @@ Ceci n'est pas une page
 - Internet connection for package downloads
 - No existing conflicting web server configuration
 
+### 7-puppet_install_nginx_web_server.pp
+
+A Puppet manifest that installs and configures nginx web server with Hello World page and 301 redirect.
+
+#### Description
+
+This Puppet manifest provides the same functionality as the previous Bash scripts but uses Puppet's declarative configuration management approach. It installs nginx, sets up the Hello World page, and configures the 301 redirect for `/redirect_me`.
+
+#### Usage
+
+```bash
+sudo puppet apply 7-puppet_install_nginx_web_server.pp
+```
+
+#### Features
+
+- ✅ Declarative configuration management with Puppet
+- ✅ Package management for nginx installation
+- ✅ File management for HTML content and nginx configuration
+- ✅ Service management for nginx daemon
+- ✅ Proper resource dependencies and notifications
+- ✅ Idempotent configuration (can be run multiple times safely)
+
+#### What it does
+
+1. **Updates packages**: Executes `apt-get update` before installation
+2. **Installs nginx**: Ensures nginx package is installed
+3. **Creates Hello World page**: Manages `/var/www/html/index.html` with proper ownership
+4. **Configures nginx**: Creates complete nginx site configuration with redirect
+5. **Manages service**: Ensures nginx service is running and enabled on boot
+6. **Handles dependencies**: Proper resource ordering and notifications
+
+#### Puppet Resources Used
+
+- **exec**: For running apt-get update
+- **package**: For nginx installation
+- **file**: For HTML content and nginx configuration
+- **service**: For nginx daemon management
+
+#### Configuration Details
+
+The manifest configures nginx to:
+
+- Listen on port 80 (default HTTP port)
+- Serve "Hello World!" from the root path `/`
+- Redirect `/redirect_me` with 301 status to YouTube URL
+- Use proper nginx configuration syntax
+
+#### Testing
+
+After applying the manifest, test with:
+
+```bash
+# Test Hello World page
+curl localhost
+# Expected: Hello World!
+
+# Test redirect
+curl -sI localhost/redirect_me
+# Expected: HTTP/1.1 301 Moved Permanently
+# Expected: Location: https://www.youtube.com/watch?v=QH2-TGUlwu4
+
+# Check service status
+sudo systemctl status nginx
+```
+
+#### Advantages of Puppet Approach
+
+- **Idempotent**: Can be run multiple times safely
+- **Declarative**: Describes desired state, not steps
+- **Resource management**: Proper handling of dependencies
+- **Error handling**: Built-in error checking and rollback
+- **Scalability**: Can be applied to multiple servers
+
+#### Requirements
+
+- Ubuntu server with sudo privileges
+- Puppet installed (`sudo apt-get install puppet`)
+- Internet connection for package downloads
+
+#### Example Output
+
+```bash
+$ sudo puppet apply 7-puppet_install_nginx_web_server.pp
+Notice: Compiled catalog for hostname
+Notice: /Stage[main]/Main/Exec[update_packages]/returns: executed successfully
+Notice: /Stage[main]/Main/Package[nginx]/ensure: created
+Notice: /Stage[main]/Main/File[/var/www/html/index.html]/ensure: created
+Notice: /Stage[main]/Main/File[/etc/nginx/sites-available/default]/ensure: created
+Info: /Stage[main]/Main/File[/etc/nginx/sites-available/default]: Scheduling refresh of Service[nginx]
+Notice: /Stage[main]/Main/Service[nginx]/ensure: ensure changed 'stopped' to 'running'
+Notice: Applied catalog in X.XX seconds
+```
+
 ## Requirements
 
 - Bash shell environment
