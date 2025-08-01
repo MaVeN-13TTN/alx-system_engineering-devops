@@ -90,6 +90,57 @@ telnet 18.212.71.220 8080  # Should fail/timeout
 - Test firewall rules before applying to production systems
 - Keep alternative access methods available when modifying firewall rules
 
+### 1. Port forwarding
+
+**File:** `100-port_forwarding`
+
+Configure UFW to forward incoming traffic from port 8080 to port 80 using NAT (Network Address Translation) rules.
+
+**Requirements:**
+
+- Configure web-01 firewall to redirect port 8080/TCP to port 80/TCP
+- Answer file should be a copy of the modified UFW configuration file
+- Nginx should only listen on port 80, but respond to requests on both ports
+
+**Implementation:**
+
+- Modified `/etc/ufw/before.rules` to add NAT table rules
+- Added PREROUTING rule to redirect port 8080 to port 80
+- Enabled incoming traffic on port 8080 in UFW
+- Used REDIRECT target for local port forwarding
+
+**Configuration Details:**
+
+```bash
+# NAT table rules added to /etc/ufw/before.rules
+*nat
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+
+# Port forwarding rule: redirect port 8080 to port 80
+-A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-port 80
+
+COMMIT
+```
+
+**Testing:**
+
+```bash
+# Test both ports return same content
+curl -sI http://18.212.71.220:80   # Should work
+curl -sI http://18.212.71.220:8080 # Should also work (forwarded)
+
+# Verify nginx only listens on port 80
+sudo ss -lpn | grep ':80\|:8080'
+```
+
+**Results:**
+
+- ✅ Port 80: HTTP/1.1 200 OK (direct nginx)
+- ✅ Port 8080: HTTP/1.1 200 OK (forwarded to port 80)
+- ✅ Nginx only listening on port 80 as expected
+- ✅ Port forwarding transparent to clients
+
 ## Debugging Tools
 
 ### Network Connectivity Testing
