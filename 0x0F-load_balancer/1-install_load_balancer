@@ -32,8 +32,8 @@ frontend web_frontend
 backend web_servers
     balance roundrobin
     option httpchk GET /
-    server 1300052-web-01 18.212.71.220:80 check
-    server 1300052-web-02 54.165.239.199:80 check
+    server web-01 18.212.71.220:80 check
+    server web-02 54.165.239.199:80 check
 EOF
 
 # Enable HAProxy to start on boot
@@ -44,3 +44,7 @@ systemctl restart haproxy
 
 # Check HAProxy status
 systemctl status haproxy
+
+# Display configured servers
+echo "Configured servers:"
+grep "server.*web-" /etc/haproxy/haproxy.cfg
