@@ -265,6 +265,97 @@ Location: https://www.youtube.com/watch?v=QH2-TGUlwu4
 - Internet connection for package downloads
 - No existing conflicting web server configuration
 
+### 4-not_found_page_404
+
+A Bash script that configures nginx with a custom 404 error page containing the specified French text.
+
+#### Description
+
+This script builds upon the previous nginx configurations and adds a custom 404 error page. When users access a non-existent page, they will receive a custom 404 page with the message "Ceci n'est pas une page".
+
+#### Usage
+
+```bash
+sudo ./4-not_found_page_404
+```
+
+#### Features
+
+- ✅ Complete nginx installation and setup
+- ✅ Creates "Hello World!" index page
+- ✅ Includes 301 redirect for `/redirect_me`
+- ✅ Custom 404 error page with specified content
+- ✅ Proper HTTP 404 error code response
+- ✅ Uses `sed` to modify nginx configuration
+- ✅ Tests nginx configuration before starting
+
+#### What it does
+
+1. Updates Ubuntu package list
+2. Installs nginx web server
+3. Creates basic "Hello World!" index page
+4. Creates custom 404.html page with "Ceci n'est pas une page"
+5. Adds 301 redirect configuration for `/redirect_me`
+6. Configures custom 404 error page handling
+7. Tests nginx configuration for syntax errors
+8. Starts nginx service
+9. Enables nginx to start on boot
+
+#### Custom 404 Configuration
+
+The script creates a custom 404 page that:
+
+- Returns HTTP 404 error code
+- Contains the exact text: "Ceci n'est pas une page"
+- Is served from `/var/www/html/404.html`
+- Uses nginx `error_page` directive
+
+#### Testing
+
+After running the script, test the 404 page with:
+
+```bash
+# Test 404 page (check headers)
+curl -sI YOUR_SERVER_IP/nonexistent
+
+# Test 404 page (check content)
+curl YOUR_SERVER_IP/anythingnotfound
+
+# Test redirect still works
+curl -sI YOUR_SERVER_IP/redirect_me/
+```
+
+#### Expected Output
+
+```bash
+# Headers test
+$ curl -sI 34.198.248.145/xyz
+HTTP/1.1 404 Not Found
+Server: nginx/1.4.6 (Ubuntu)
+Date: Tue, 21 Feb 2017 21:46:43 GMT
+Content-Type: text/html
+Content-Length: 26
+Connection: keep-alive
+
+# Content test
+$ curl 34.198.248.145/xyzfoo
+Ceci n'est pas une page
+```
+
+#### Technical Details
+
+- Uses `error_page 404 /404.html;` directive
+- Creates location block for 404.html with `internal` flag
+- Maintains all previous functionality (Hello World page and redirect)
+- Custom 404 page is served from document root
+- Proper nginx syntax for error handling
+
+#### Requirements
+
+- Ubuntu server with sudo privileges
+- Internet connection for package downloads
+- No existing conflicting web server configuration
+
 ## Requirements
 
 - Bash shell environment
