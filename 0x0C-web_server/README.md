@@ -64,6 +64,64 @@ Usage: 0-transfer_file PATH_TO_FILE IP USERNAME PATH_TO_SSH_KEY
 - Strict host key checking is disabled (`-o StrictHostKeyChecking=no`) for automation
 - Files are transferred directly to the user's home directory on the remote server
 
+### 1-install_nginx_web_server
+
+A Bash script that automatically installs and configures nginx web server on an Ubuntu machine.
+
+#### Description
+
+This script sets up nginx web server with a basic "Hello World!" page. It's designed to automate the initial nginx installation and configuration process on a fresh Ubuntu server.
+
+#### Usage
+
+```bash
+sudo ./1-install_nginx_web_server
+```
+
+#### Features
+
+- ✅ Updates package list before installation
+- ✅ Installs nginx using apt-get with -y flag
+- ✅ Configures nginx to listen on port 80 (default)
+- ✅ Creates a simple "Hello World!" index page
+- ✅ Starts nginx service automatically
+- ✅ Enables nginx to start on boot
+
+#### What it does
+
+1. Updates the Ubuntu package list
+2. Installs nginx web server
+3. Creates an index.html file with "Hello World!" content
+4. Starts the nginx service
+5. Enables nginx to start automatically on system boot
+
+#### Testing
+
+After running the script, you can test it with:
+
+```bash
+# Test locally on the server
+curl localhost
+
+# Test from remote machine (replace IP with your server's IP)
+curl YOUR_SERVER_IP
+
+# Check HTTP headers
+curl -sI YOUR_SERVER_IP
+```
+
+#### Expected Output
+
+```
+Hello World!
+```
+
+#### Requirements
+
+- Ubuntu server with sudo privileges
+- Internet connection for package downloads
+- No existing conflicting web server on port 80
+
 ## Requirements
 
 - Bash shell environment
