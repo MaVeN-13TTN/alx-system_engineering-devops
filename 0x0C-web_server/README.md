@@ -122,6 +122,69 @@ Hello World!
 - Internet connection for package downloads
 - No existing conflicting web server on port 80
 
+### 2-setup_a_domain_name
+
+A file containing the domain name configured for the web server.
+
+#### Description
+
+This file contains the root domain name (without subdomain) that points to your web-01 server. The domain should be configured with proper DNS A records to route traffic to your server's IP address.
+
+#### Content Format
+
+```
+yourdomain.tech
+```
+
+#### Requirements
+
+- Domain name must be a .tech domain (can be obtained free through GitHub Student Pack)
+- Must be root domain only (no www or other subdomains)
+- DNS A record must point to your web-01 server IP address
+- Domain must be registered with "Dotserve Inc" as the registrar
+
+#### Setup Process
+
+1. **Get GitHub Student Pack**: Access GitHub Student Developer Pack
+2. **Claim .TECH Domain**: Use the free .tech domain benefit
+3. **Register Domain**: Complete registration through .TECH Domains
+4. **Configure DNS**: Set up A record pointing to your server IP
+5. **Verify Setup**: Use `dig` command to verify DNS propagation
+6. **Update File**: Add your domain name to this file
+
+#### Verification
+
+After setup, you can verify your domain with:
+
+```bash
+# Check DNS resolution
+dig yourdomain.tech
+
+# Test web server response
+curl yourdomain.tech
+
+# Verify registrar (should show "Dotserve Inc")
+# Check at: https://whois.whoisxmlapi.com/
+```
+
+#### Example
+
+```bash
+$ cat 2-setup_a_domain_name
+myschool.tech
+
+$ dig myschool.tech
+; <<>> DiG 9.10.6 <<>> myschool.tech
+;; ANSWER SECTION:
+myschool.tech.  7199    IN  A   184.72.193.201
+```
+
+#### Notes
+
+- DNS propagation can take 1-2 hours
+- Make sure to update your GitHub profile with the domain
+- Verify the registrar shows as "Dotserve Inc"
+
 ## Requirements
 
 - Bash shell environment
