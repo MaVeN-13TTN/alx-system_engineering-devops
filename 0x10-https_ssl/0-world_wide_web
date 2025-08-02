@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Script that displays information about subdomains
+# Usage: ./0-world_wide_web domain [subdomain]
+
+# Function to get subdomain information
+get_subdomain_info() {
+    local subdomain="$1"
+    local domain="$2"
+    local full_domain="${subdomain}.${domain}"
+    
+    # Use dig to get DNS information and parse with awk
+    # shellcheck disable=SC2086
+    dig @8.8.8.8 "$full_domain" | awk -v subdomain="$subdomain" -v domain="$domain" '
+    $1 ~ "^" subdomain "\\." domain "\\.$" && $3 == "IN" {
+        record_type = $4
+        destination = $5
+        print "The subdomain " subdomain " is a " record_type " record and points to " destination
+    }'
+}
+
+# Main function
+main() {
+    local domain="$1"
+    local subdomain="$2"
+    
+    if [ -z "$domain" ]; then
+        echo "Usage: $0 domain [subdomain]"
+        exit 1
+    fi
+    
+    if [ -n "$subdomain" ]; then
+        # Display information for specific subdomain
+        get_subdomain_info "$subdomain" "$domain"
+    else
+        # Display information for default subdomains in specified order
+        for sub in www lb-01 web-01 web-02; do
+            get_subdomain_info "$sub" "$domain"
+        done
+    fi
+}
+
+# Call main function with all arguments
+main "$@"
