@@ -47,7 +47,56 @@ To check a specific subdomain:
 ./0-world_wide_web your_domain.com www
 ```
 
+### 1. HAProxy SSL termination
+
+Configure HAProxy to handle encrypted traffic, decrypt it, and pass it on to the backend web servers.
+
+**Requirements:**
+
+- HAProxy must be listening on port TCP 443
+- HAProxy must be accepting SSL traffic
+- HAProxy must serve encrypted traffic that will return the / of your web server
+- When querying the root of your domain name, the page returned must contain "ALX"
+- Share your HAProxy config as an answer file (/etc/haproxy/haproxy.cfg)
+- The file `1-haproxy_ssl_termination` must be your HAProxy configuration file
+- Make sure to install HAProxy 1.5 or higher (SSL termination is not available before v1.5)
+
+**Setup Steps:**
+
+1. **Install Certbot** on the load balancer:
+
+   ```bash
+   sudo apt update && sudo apt install -y certbot
+   ```
+
+2. **Stop HAProxy temporarily** and obtain SSL certificate:
+
+   ```bash
+   sudo systemctl stop haproxy
+   sudo certbot certonly --standalone -d www.your_domain.com --non-interactive --agree-tos --email admin@your_domain.com
+   ```
+
+3. **Prepare certificate for HAProxy**:
+
+   ```bash
+   sudo mkdir -p /etc/haproxy/certs
+   sudo cat /etc/letsencrypt/live/www.your_domain.com/fullchain.pem /etc/letsencrypt/live/www.your_domain.com/privkey.pem > /etc/haproxy/certs/www.your_domain.com.pem
+   sudo chmod 600 /etc/haproxy/certs/www.your_domain.com.pem
+   ```
+
+4. **Deploy HAProxy configuration** and restart:
+   ```bash
+   sudo cp 1-haproxy_ssl_termination /etc/haproxy/haproxy.cfg
+   sudo systemctl start haproxy
+   ```
+
+**Testing:**
+
+- Test HTTPS: `curl https://www.your_domain.com` should return "ALX"
+- Test HTTP redirect: `curl -I http://www.your_domain.com` should return 301 redirect to HTTPS
+
 ## Files
 
 - `0-world_wide_web` - Bash script to audit domain subdomains
+- `1-haproxy_ssl_termination` - HAProxy configuration file with SSL termination
 - `README.md` - This file
